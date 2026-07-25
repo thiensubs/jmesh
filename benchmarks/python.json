@@ -1,0 +1,60 @@
+{
+  "language": "Python",
+  "library": "sqlite-utils",
+  "benchmarks": {
+    "n1000": {
+      "import": {
+        "records": 1000,
+        "time_ms": 940.77,
+        "cpu_user_ms": 63.21,
+        "cpu_sys_ms": 82.01,
+        "memory_kb": 256,
+        "ops_per_sec": 1063.0
+      },
+      "export": {
+        "records": 1000,
+        "time_ms": 1.52,
+        "cpu_user_ms": 1.53,
+        "cpu_sys_ms": 0.0,
+        "memory_kb": 256,
+        "ops_per_sec": 657358.0
+      }
+    },
+    "n10000": {
+      "import": {
+        "records": 10000,
+        "time_ms": 9073.64,
+        "cpu_user_ms": 633.53,
+        "cpu_sys_ms": 840.9,
+        "memory_kb": 256,
+        "ops_per_sec": 1102.0
+      },
+      "export": {
+        "records": 10000,
+        "time_ms": 13.79,
+        "cpu_user_ms": 12.73,
+        "cpu_sys_ms": 1.07,
+        "memory_kb": 3584,
+        "ops_per_sec": 724994.0
+      }
+    },
+    "n100000": {
+      "import": {
+        "records": 100000,
+        "time_ms": 86776.32,
+        "cpu_user_ms": 6261.94,
+        "cpu_sys_ms": 8412.72,
+        "memory_kb": 0,
+        "ops_per_sec": 1152.0
+      },
+      "export": {
+        "records": 100000,
+        "time_ms": 141.99,
+        "cpu_user_ms": 133.28,
+        "cpu_sys_ms": 8.7,
+        "memory_kb": 36404,
+        "ops_per_sec": 704287.0
+      }
+    }
+  }
+}

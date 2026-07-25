@@ -1,0 +1,60 @@
+{
+  "language": "C",
+  "library": "libsqlite3",
+  "benchmarks": {
+    "n1000": {
+      "import": {
+        "records": 1000,
+        "time_ms": 0.68,
+        "cpu_user_ms": 0.69,
+        "cpu_sys_ms": 0.00,
+        "memory_kb": 0,
+        "ops_per_sec": 1466678
+      },
+      "export": {
+        "records": 1000,
+        "time_ms": 0.19,
+        "cpu_user_ms": 0.19,
+        "cpu_sys_ms": 0.00,
+        "memory_kb": 0,
+        "ops_per_sec": 5365239
+      }
+    },
+    "n10000": {
+      "import": {
+        "records": 10000,
+        "time_ms": 5.82,
+        "cpu_user_ms": 5.83,
+        "cpu_sys_ms": 0.00,
+        "memory_kb": 0,
+        "ops_per_sec": 1717260
+      },
+      "export": {
+        "records": 10000,
+        "time_ms": 1.67,
+        "cpu_user_ms": 1.67,
+        "cpu_sys_ms": 0.00,
+        "memory_kb": 0,
+        "ops_per_sec": 5990198
+      }
+    },
+    "n100000": {
+      "import": {
+        "records": 100000,
+        "time_ms": 63.63,
+        "cpu_user_ms": 58.59,
+        "cpu_sys_ms": 5.04,
+        "memory_kb": 0,
+        "ops_per_sec": 1571618
+      },
+      "export": {
+        "records": 100000,
+        "time_ms": 17.29,
+        "cpu_user_ms": 16.27,
+        "cpu_sys_ms": 1.02,
+        "memory_kb": 0,
+        "ops_per_sec": 5783478
+      }
+    }
+  }
+}

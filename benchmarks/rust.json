@@ -1,0 +1,84 @@
+{
+  "language": "Rust",
+  "library": "jmesh",
+  "benchmarks": {
+    "n10000": {
+      "import": {
+        "records": 10000,
+        "time_ms": 5.6701429999999995,
+        "cpu_user_ms": 5.082,
+        "cpu_sys_ms": 0.06799999999999962,
+        "memory_kb": 0,
+        "ops_per_sec": 1763623.9509303381
+      },
+      "export": {
+        "records": 10000,
+        "time_ms": 7.020128,
+        "cpu_user_ms": 4.031000000000001,
+        "cpu_sys_ms": 2.9810000000000003,
+        "memory_kb": 6668,
+        "ops_per_sec": 1424475.451159865
+      },
+      "export_stream": {
+        "records": 10000,
+        "time_ms": 3.36626,
+        "cpu_user_ms": 2.2699999999999996,
+        "cpu_sys_ms": 1.0959999999999992,
+        "memory_kb": 0,
+        "ops_per_sec": 2970655.86140108
+      }
+    },
+    "n100000": {
+      "import": {
+        "records": 100000,
+        "time_ms": 1162.8527669999999,
+        "cpu_user_ms": 47.272,
+        "cpu_sys_ms": 11.080000000000002,
+        "memory_kb": 2176,
+        "ops_per_sec": 85995.40959771394
+      },
+      "export": {
+        "records": 100000,
+        "time_ms": 72.555685,
+        "cpu_user_ms": 45.364000000000004,
+        "cpu_sys_ms": 27.189,
+        "memory_kb": 78720,
+        "ops_per_sec": 1378251.752429875
+      },
+      "export_stream": {
+        "records": 100000,
+        "time_ms": 34.425268,
+        "cpu_user_ms": 28.60499999999999,
+        "cpu_sys_ms": 5.813999999999993,
+        "memory_kb": 0,
+        "ops_per_sec": 2904843.0356446314
+      }
+    },
+    "n1000": {
+      "import": {
+        "records": 1000,
+        "time_ms": 1.3785340000000001,
+        "cpu_user_ms": 0.0,
+        "cpu_sys_ms": 0.861,
+        "memory_kb": 0,
+        "ops_per_sec": 725408.296059437
+      },
+      "export": {
+        "records": 1000,
+        "time_ms": 0.7417790000000001,
+        "cpu_user_ms": 0.0,
+        "cpu_sys_ms": 0.742,
+        "memory_kb": 0,
+        "ops_per_sec": 1348110.4210283656
+      },
+      "export_stream": {
+        "records": 1000,
+        "time_ms": 0.38676900000000003,
+        "cpu_user_ms": 0.0,
+        "cpu_sys_ms": 0.3879999999999999,
+        "memory_kb": 0,
+        "ops_per_sec": 2585522.6246157265
+      }
+    }
+  }
+}
