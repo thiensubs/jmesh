@@ -1,6 +1,6 @@
 # jmesh
 
-[![CI](https://github.com/yourusername/jmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/jmesh/actions)
+[![CI](https://github.com/thiensubs/jmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/thiensubs/jmesh/actions)
 [![Crates.io](https://img.shields.io/crates/v/jmesh)](https://crates.io/crates/jmesh)
 [![Docs.rs](https://docs.rs/jmesh/badge.svg)](https://docs.rs/jmesh)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -207,7 +207,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Performance
 
-See the [benchmark report](BENCHMARK.md). Roughly:
+See the [benchmark report](benchmarks/BENCHMARK_REPORT.md). Roughly:
 
 - **2-11% overhead** vs raw C `libsqlite3` (same engine underneath)
 - **50-200× faster** than Python `jmesh` for single-row operations
@@ -215,7 +215,7 @@ See the [benchmark report](BENCHMARK.md). Roughly:
 ## Development
 
 ```bash
-git clone https://github.com/yourusername/jmesh
+git clone https://github.com/thiensubs/jmesh
 cd jmesh
 cargo test
 cargo bench
