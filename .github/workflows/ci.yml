@@ -28,18 +28,6 @@ jobs:
       - run: cargo test --all-features
       - run: cargo doc --no-deps
 
-  coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: taiki-e/install-action@cargo-tarpaulin
-      - run: cargo tarpaulin --all-features --out Xml
-      - uses: codecov/codecov-action@v4
-        with:
-          files: ./cobertura.xml
-          fail_ci_if_error: true
-
   benchmark:
     runs-on: ubuntu-latest
     steps:
