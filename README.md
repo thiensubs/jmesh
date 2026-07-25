@@ -207,7 +207,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Performance
 
-See the [benchmark report](jmesh-benchmark-suite/BENCHMARK_REPORT.md). Roughly:
+See the [benchmark report](benchmarks/BENCHMARK_REPORT.md). Roughly:
 
 - **2-11% overhead** vs raw C `libsqlite3` (same engine underneath)
 - **50-200× faster** than Python `jmesh` for single-row operations

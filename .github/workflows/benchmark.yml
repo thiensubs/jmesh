@@ -77,29 +77,51 @@ jobs:
         run: |
           echo "## 🏁 jmesh Benchmark Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Benchmark | Time | Throughput | vs Main |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----------|------|------------|---------|" >> $GITHUB_STEP_SUMMARY
 
-          # Parse cargo bench output and format as table rows
-          # This is a simplified example — adapt to your actual bench output format
-          while IFS= read -r line; do
-            if [[ $line =~ bench:\ +([0-9,]+)\ ns/iter ]]; then
-              NS="${BASH_REMATCH[1]}"
-              TIME_MS=$(echo "scale=2; ${NS//,}/1000000" | bc)
-              echo "| \`$line\` | ${TIME_MS} ms | — | — |" >> $GITHUB_STEP_SUMMARY
-            fi
-          done < benchmarks/LAST_RUN.txt
+          # Parse JSON results with Ruby (already available)
+          ruby -e '
+            require "json"
+
+            RESULTS_DIR = "jmesh-benchmark-suite/results"
+            LANGS = %w[c rust python]
+
+            # Load all results
+            data = {}
+            LANGS.each do |lang|
+              path = File.join(RESULTS_DIR, "#{lang}.json")
+              data[lang] = File.exist?(path) ? JSON.parse(File.read(path)) : {}
+            end
+
+            # Print comparison table
+            # Adjust field names below to match your actual JSON structure
+            puts "| Language | Benchmark | Time (ms) | vs C |"
+            puts "|----------|-----------|-----------|------|"
+
+            # Assuming JSON like: {"benchmarks": [{"name": "...", "time_ms": 1.23}]}
+            # If your structure differs, change the keys below
+            c_benches = (data["c"]["benchmarks"] || data["c"] || []).map { |b| [b["name"], b["time_ms"] || b["time"] || 0] }.to_h
+
+            data.each do |lang, result|
+              benches = result["benchmarks"] || result || []
+              benches.each do |b|
+                name = b["name"] || b["benchmark"] || "?"
+                time = b["time_ms"] || b["time"] || b["duration_ms"] || 0
+                c_time = c_benches[name]
+                vs = c_time && c_time > 0 ? "#{(time / c_time * 100).round(1)}%" : "—"
+                marker = lang == "rust" ? "⚡" : (lang == "c" ? "🏆" : "🐍")
+                puts "| #{marker} #{lang} | #{name} | #{time} | #{vs} |"
+              end
+            end
+          ' >> $GITHUB_STEP_SUMMARY
 
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "
-          📎 View Full Raw Output
-          " >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-              cat benchmarks/LAST_RUN.txt >> $GITHUB_STEP_SUMMARY
-              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-              echo "
-          " >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${GITHUB_SHA::7}\` · **Ref:** \`${GITHUB_REF_NAME}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>📎 View Full BENCHMARK_REPORT.md</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat jmesh-benchmark-suite/BENCHMARK_REPORT.md >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
 
       - name: Commit results
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
