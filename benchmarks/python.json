@@ -5,55 +5,55 @@
     "n1000": {
       "import": {
         "records": 1000,
-        "time_ms": 940.77,
-        "cpu_user_ms": 63.21,
-        "cpu_sys_ms": 82.01,
-        "memory_kb": 256,
-        "ops_per_sec": 1063.0
+        "time_ms": 1056.19,
+        "cpu_user_ms": 101.62,
+        "cpu_sys_ms": 197.11,
+        "memory_kb": 0,
+        "ops_per_sec": 947.0
       },
       "export": {
         "records": 1000,
-        "time_ms": 1.52,
-        "cpu_user_ms": 1.53,
+        "time_ms": 1.8,
+        "cpu_user_ms": 1.81,
         "cpu_sys_ms": 0.0,
         "memory_kb": 256,
-        "ops_per_sec": 657358.0
+        "ops_per_sec": 554985.0
       }
     },
     "n10000": {
       "import": {
         "records": 10000,
-        "time_ms": 9073.64,
-        "cpu_user_ms": 633.53,
-        "cpu_sys_ms": 840.9,
-        "memory_kb": 256,
-        "ops_per_sec": 1102.0
+        "time_ms": 10383.46,
+        "cpu_user_ms": 1011.02,
+        "cpu_sys_ms": 1985.93,
+        "memory_kb": 384,
+        "ops_per_sec": 963.0
       },
       "export": {
         "records": 10000,
-        "time_ms": 13.79,
-        "cpu_user_ms": 12.73,
-        "cpu_sys_ms": 1.07,
+        "time_ms": 16.35,
+        "cpu_user_ms": 12.39,
+        "cpu_sys_ms": 3.97,
         "memory_kb": 3584,
-        "ops_per_sec": 724994.0
+        "ops_per_sec": 611541.0
       }
     },
     "n100000": {
       "import": {
         "records": 100000,
-        "time_ms": 86776.32,
-        "cpu_user_ms": 6261.94,
-        "cpu_sys_ms": 8412.72,
+        "time_ms": 100754.74,
+        "cpu_user_ms": 10460.71,
+        "cpu_sys_ms": 19481.71,
         "memory_kb": 0,
-        "ops_per_sec": 1152.0
+        "ops_per_sec": 993.0
       },
       "export": {
         "records": 100000,
-        "time_ms": 141.99,
-        "cpu_user_ms": 133.28,
-        "cpu_sys_ms": 8.7,
-        "memory_kb": 36404,
-        "ops_per_sec": 704287.0
+        "time_ms": 164.74,
+        "cpu_user_ms": 151.93,
+        "cpu_sys_ms": 12.8,
+        "memory_kb": 36540,
+        "ops_per_sec": 607026.0
       }
     }
   }
