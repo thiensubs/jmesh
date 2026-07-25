@@ -67,6 +67,34 @@ jobs:
           cd jmesh-benchmark-suite
           ruby run.rb
 
+      - name: Generate benchmark summary
+        run: |
+          echo "## 🏁 jmesh Benchmark Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Benchmark | Time | Throughput | vs Main |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|------|------------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          # Parse cargo bench output and format as table rows
+          # This is a simplified example — adapt to your actual bench output format
+          while IFS= read -r line; do
+            if [[ $line =~ bench:\ +([0-9,]+)\ ns/iter ]]; then
+              NS="${BASH_REMATCH[1]}"
+              TIME_MS=$(echo "scale=2; ${NS//,}/1000000" | bc)
+              echo "| \`$line\` | ${TIME_MS} ms | — | — |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done < benchmarks/LAST_RUN.txt
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "
+          📎 View Full Raw Output
+          " >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              cat benchmarks/LAST_RUN.txt >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              echo "
+          " >> $GITHUB_STEP_SUMMARY
+
       - name: Commit results
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
