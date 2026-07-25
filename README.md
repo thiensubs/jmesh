@@ -1,6 +1,6 @@
 # jmesh
 
-[![CI](https://github.com/yourusername/jmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/jmesh/actions)
+[![CI](https://github.com/thiensubs/jmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/thiensubs/jmesh/actions)
 [![Crates.io](https://img.shields.io/crates/v/jmesh)](https://crates.io/crates/jmesh)
 [![Docs.rs](https://docs.rs/jmesh/badge.svg)](https://docs.rs/jmesh)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
