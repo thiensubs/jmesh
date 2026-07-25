@@ -78,46 +78,53 @@ jobs:
           echo "## 🏁 jmesh Benchmark Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Parse JSON results with Ruby (already available)
           ruby -e '
             require "json"
 
             RESULTS_DIR = "jmesh-benchmark-suite/results"
             LANGS = %w[c rust python]
 
-            # Load all results
             data = {}
             LANGS.each do |lang|
               path = File.join(RESULTS_DIR, "#{lang}.json")
-              data[lang] = File.exist?(path) ? JSON.parse(File.read(path)) : {}
+              next unless File.exist?(path)
+              raw = JSON.parse(File.read(path))
+              # Handle both: [{"name":"...", "time_ms":1.2}]  and  {"benchmarks":[...]}
+              data[lang] = raw.is_a?(Array) ? raw : (raw["benchmarks"] || [])
             end
 
-            # Print comparison table
-            # Adjust field names below to match your actual JSON structure
-            puts "| Language | Benchmark | Time (ms) | vs C |"
-            puts "|----------|-----------|-----------|------|"
-
-            # Assuming JSON like: {"benchmarks": [{"name": "...", "time_ms": 1.23}]}
-            # If your structure differs, change the keys below
-            c_benches = (data["c"]["benchmarks"] || data["c"] || []).map { |b| [b["name"], b["time_ms"] || b["time"] || 0] }.to_h
-
-            data.each do |lang, result|
-              benches = result["benchmarks"] || result || []
+            # Build lookup: { benchmark_name => { "c" => time, "rust" => time, "python" => time } }
+            by_bench = {}
+            data.each do |lang, benches|
               benches.each do |b|
-                name = b["name"] || b["benchmark"] || "?"
-                time = b["time_ms"] || b["time"] || b["duration_ms"] || 0
-                c_time = c_benches[name]
-                vs = c_time && c_time > 0 ? "#{(time / c_time * 100).round(1)}%" : "—"
-                marker = lang == "rust" ? "⚡" : (lang == "c" ? "🏆" : "🐍")
-                puts "| #{marker} #{lang} | #{name} | #{time} | #{vs} |"
+                # Defensive: try common key names
+                name = b["name"] || b["benchmark"] || b["test"] || "unknown"
+                time = b["time_ms"] || b["time"] || b["duration_ms"] || b["elapsed_ms"] || b["ms"] || 0
+                time = time.to_f
+                by_bench[name] ||= {}
+                by_bench[name][lang] = time
               end
+            end
+
+            puts "| Benchmark | C (ms) | Rust (ms) | Python (ms) | Rust vs C | Python vs C |"
+            puts "|-----------|--------|-----------|-------------|-----------|-------------|"
+
+            by_bench.each do |name, times|
+              c_time   = times["c"]   || 0
+              rust_time = times["rust"] || 0
+              py_time  = times["python"] || 0
+
+              rust_vs = c_time > 0 ? "#{(rust_time / c_time * 100).round(1)}%" : "—"
+              py_vs   = c_time > 0 ? "#{(py_time / c_time * 100).round(1)}%" : "—"
+
+              puts "| #{name} | #{c_time} | #{rust_time} | #{py_time} | #{rust_vs} | #{py_vs} |"
             end
           ' >> $GITHUB_STEP_SUMMARY
 
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** \`${GITHUB_SHA::7}\` · **Ref:** \`${GITHUB_REF_NAME}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "<details><summary>📎 View Full BENCHMARK_REPORT.md</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>📎 Full BENCHMARK_REPORT.md</summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           cat jmesh-benchmark-suite/BENCHMARK_REPORT.md >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
