@@ -1,0 +1,17 @@
+[package]
+name = "jmesh-bench"
+version = "0.1.0"
+edition = "2021"
+
+# Standalone crate — not part of the parent jmesh "workspace".
+[workspace]
+
+[dependencies]
+jmesh = { path = "../.." }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+libc = "0.2"
+
+[[bin]]
+name = "bench"
+path = "bench.rs"

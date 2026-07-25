@@ -1,0 +1,22 @@
+/target
+**/*.rs.bk
+Cargo.lock
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite-journal
+/cobertura.xml
+/coverage
+
+# benchmark suite intermediates
+/jmesh-benchmark-suite/rust/target
+/jmesh-benchmark-suite/c/bench
+/jmesh-benchmark-suite/**/results.json
+/jmesh-benchmark-suite/results/
+/jmesh-benchmark-suite/report/
+/jmesh-benchmark-suite/BENCHMARK_REPORT.md
+.DS_Store
+.idea
+.vscode

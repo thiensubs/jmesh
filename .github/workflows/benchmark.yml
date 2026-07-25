@@ -1,0 +1,96 @@
+name: Benchmark
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'benchmarks/**'
+      - '**.md'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsqlite3-dev imagemagick libmagickwand-dev
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: false
+
+      - name: Install Ruby gems (charts; optional)
+        run: gem install gruff || echo "gruff install failed — charts will be skipped"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Set up Python environment
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install sqlite-utils
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: benchmark-${{ runner.os }}
+
+      - name: Build jmesh
+        run: cargo build --release
+
+      - name: Run benchmarks and generate report
+        run: |
+          source .venv/bin/activate
+          cd jmesh-benchmark-suite
+          ruby run.rb
+
+      - name: Commit results
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "benchmark-bot@jmesh.thiensubs"
+          git config --local user.name "Benchmark Bot"
+          mkdir -p benchmarks
+          cp jmesh-benchmark-suite/results/*.json benchmarks/
+          cp jmesh-benchmark-suite/BENCHMARK_REPORT.md benchmarks/
+          cp jmesh-benchmark-suite/report/*.png benchmarks/ 2>/dev/null || true
+          echo "Last run: $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)" > benchmarks/LAST_RUN.txt
+          echo "Commit: ${{ github.sha }}" >> benchmarks/LAST_RUN.txt
+          git add benchmarks/
+          if ! git diff --staged --quiet; then
+            git commit -m "📊 benchmark: update results [skip ci]" -m "Run for commit ${{ github.sha }}"
+            git push
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ github.run_id }}
+          path: |
+            jmesh-benchmark-suite/results/
+            jmesh-benchmark-suite/BENCHMARK_REPORT.md
+            jmesh-benchmark-suite/report/*.png
+          if-no-files-found: warn
+          retention-days: 30
