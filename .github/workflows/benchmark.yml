@@ -8,12 +8,6 @@ on:
       - '**.md'
   pull_request:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'benchmarks/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.github/workflows/benchmark.yml'
   workflow_dispatch:
 
 env:
@@ -27,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -49,7 +43,7 @@ jobs:
         run: gem install gruff || echo "gruff install failed — charts will be skipped"
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
@@ -73,12 +67,6 @@ jobs:
           cd jmesh-benchmark-suite
           ruby run.rb
 
-      - name: Generate benchmark summary
-        run: |
-          echo "## 🏁 jmesh Benchmark Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          cat jmesh-benchmark-suite/BENCHMARK_REPORT.md >> $GITHUB_STEP_SUMMARY
-
       - name: Commit results
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -97,7 +85,7 @@ jobs:
           fi
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark-results-${{ github.run_id }}
           path: |
