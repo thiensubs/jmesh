@@ -5,55 +5,55 @@
     "n1000": {
       "import": {
         "records": 1000,
-        "time_ms": 896.18,
-        "cpu_user_ms": 104.12,
-        "cpu_sys_ms": 230.06,
+        "time_ms": 700.91,
+        "cpu_user_ms": 95.6,
+        "cpu_sys_ms": 231.23,
         "memory_kb": 128,
-        "ops_per_sec": 1116.0
+        "ops_per_sec": 1427.0
       },
       "export": {
         "records": 1000,
-        "time_ms": 2.05,
-        "cpu_user_ms": 2.06,
-        "cpu_sys_ms": 0.0,
-        "memory_kb": 384,
-        "ops_per_sec": 486646.0
+        "time_ms": 2.03,
+        "cpu_user_ms": 1.02,
+        "cpu_sys_ms": 1.02,
+        "memory_kb": 256,
+        "ops_per_sec": 493501.0
       }
     },
     "n10000": {
       "import": {
         "records": 10000,
-        "time_ms": 8397.85,
-        "cpu_user_ms": 936.34,
-        "cpu_sys_ms": 2268.58,
+        "time_ms": 6357.39,
+        "cpu_user_ms": 979.37,
+        "cpu_sys_ms": 2160.94,
         "memory_kb": 384,
-        "ops_per_sec": 1191.0
+        "ops_per_sec": 1573.0
       },
       "export": {
         "records": 10000,
-        "time_ms": 16.3,
-        "cpu_user_ms": 13.92,
-        "cpu_sys_ms": 2.39,
+        "time_ms": 16.12,
+        "cpu_user_ms": 13.41,
+        "cpu_sys_ms": 2.71,
         "memory_kb": 3456,
-        "ops_per_sec": 613377.0
+        "ops_per_sec": 620536.0
       }
     },
     "n100000": {
       "import": {
         "records": 100000,
-        "time_ms": 75999.04,
-        "cpu_user_ms": 9952.85,
-        "cpu_sys_ms": 21890.59,
-        "memory_kb": 0,
-        "ops_per_sec": 1316.0
+        "time_ms": 62484.73,
+        "cpu_user_ms": 9247.0,
+        "cpu_sys_ms": 22204.4,
+        "memory_kb": 620,
+        "ops_per_sec": 1600.0
       },
       "export": {
         "records": 100000,
-        "time_ms": 164.82,
-        "cpu_user_ms": 154.91,
-        "cpu_sys_ms": 9.89,
-        "memory_kb": 36708,
-        "ops_per_sec": 606708.0
+        "time_ms": 201.44,
+        "cpu_user_ms": 172.71,
+        "cpu_sys_ms": 28.77,
+        "memory_kb": 36224,
+        "ops_per_sec": 496418.0
       }
     }
   }
