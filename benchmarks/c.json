@@ -5,55 +5,55 @@
     "n1000": {
       "import": {
         "records": 1000,
-        "time_ms": 0.76,
-        "cpu_user_ms": 0.00,
-        "cpu_sys_ms": 0.77,
+        "time_ms": 0.70,
+        "cpu_user_ms": 0.71,
+        "cpu_sys_ms": 0.00,
         "memory_kb": 0,
-        "ops_per_sec": 1313803
+        "ops_per_sec": 1424712
       },
       "export": {
         "records": 1000,
-        "time_ms": 0.19,
-        "cpu_user_ms": 0.00,
-        "cpu_sys_ms": 0.19,
+        "time_ms": 0.18,
+        "cpu_user_ms": 0.19,
+        "cpu_sys_ms": 0.00,
         "memory_kb": 0,
-        "ops_per_sec": 5230509
+        "ops_per_sec": 5410728
       }
     },
     "n10000": {
       "import": {
         "records": 10000,
-        "time_ms": 7.49,
-        "cpu_user_ms": 6.11,
-        "cpu_sys_ms": 1.38,
+        "time_ms": 6.84,
+        "cpu_user_ms": 6.84,
+        "cpu_sys_ms": 0.00,
         "memory_kb": 0,
-        "ops_per_sec": 1334455
+        "ops_per_sec": 1461361
       },
       "export": {
         "records": 10000,
-        "time_ms": 1.78,
-        "cpu_user_ms": 1.78,
+        "time_ms": 1.74,
+        "cpu_user_ms": 1.74,
         "cpu_sys_ms": 0.00,
         "memory_kb": 0,
-        "ops_per_sec": 5619979
+        "ops_per_sec": 5739174
       }
     },
     "n100000": {
       "import": {
         "records": 100000,
-        "time_ms": 84.43,
-        "cpu_user_ms": 71.54,
-        "cpu_sys_ms": 12.88,
+        "time_ms": 79.57,
+        "cpu_user_ms": 63.61,
+        "cpu_sys_ms": 15.93,
         "memory_kb": 0,
-        "ops_per_sec": 1184425
+        "ops_per_sec": 1256783
       },
       "export": {
         "records": 100000,
-        "time_ms": 19.55,
-        "cpu_user_ms": 18.46,
-        "cpu_sys_ms": 1.10,
+        "time_ms": 18.63,
+        "cpu_user_ms": 16.52,
+        "cpu_sys_ms": 2.11,
         "memory_kb": 0,
-        "ops_per_sec": 5113911
+        "ops_per_sec": 5366756
       }
     }
   }
