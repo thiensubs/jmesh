@@ -26,9 +26,11 @@ pub enum Error {
     #[error("not a JSON object")]
     NotAnObject,
 
+    #[cfg(feature = "parquet")]
     #[error("Parquet error: {0}")]
     Parquet(#[from] parquet::errors::ParquetError),
 
+    #[cfg(feature = "parquet")]
     #[error("Arrow error: {0}")]
     Arrow(#[from] arrow::error::ArrowError),
 
