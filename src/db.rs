@@ -146,6 +146,13 @@ impl Database {
         Ok(())
     }
 
+    /// The underlying rusqlite connection, for the callers that need raw
+    /// prepared statements — bulk loads and raw reads that must not
+    /// materialize rows as JSON.
+    pub fn connection(&self) -> &Connection {
+        &self.conn
+    }
+
     /// Close the database connection.
     #[allow(clippy::result_large_err)] // mirrors rusqlite's own `Connection::close` signature
     pub fn close(self) -> std::result::Result<(), (Connection, rusqlite::Error)> {
@@ -161,7 +168,7 @@ impl Database {
         table: &str,
         obj: &serde_json::Map<String, JsonValue>,
     ) -> Result<()> {
-        let mut cache = self.schema_cache.borrow_mut();
+        let cache = self.schema_cache.borrow_mut();
 
         // Fast path: schema in cache and all columns exist
         if let Ok(schema) = cache.get(&self.conn, table) {

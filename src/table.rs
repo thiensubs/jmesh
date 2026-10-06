@@ -349,13 +349,13 @@ impl<'a> Table<'a> {
 
     /// Get column information.
     pub fn columns(&self) -> Result<Vec<ColumnInfo>> {
-        let mut cache = self.db.schema_cache.borrow_mut();
+        let cache = self.db.schema_cache.borrow();
         let schema = cache.get(&self.db.conn, &self.name)?;
         Ok(schema.columns.clone())
     }
 
     fn column_names(&self) -> Result<Vec<String>> {
-        let mut cache = self.db.schema_cache.borrow_mut();
+        let cache = self.db.schema_cache.borrow();
         cache.column_names(&self.db.conn, &self.name)
     }
 

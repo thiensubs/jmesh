@@ -1,6 +1,6 @@
 [package]
 name = "jmesh"
-version = "1.0.1"
+version = "2.0.0"
 authors = ["thiensubs <nguoitinh.cuaanh.12@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -29,6 +29,8 @@ fts5 = ["rusqlite/backup"]
 json1 = []
 csv = ["dep:csv"]
 parquet = ["dep:parquet", "dep:arrow", "dep:bytes"]
+nquery = ["tract-onnx", "tokenizers"]
+learn = []  # learn just needs the trainer script, no additional Rust deps
 
 [dependencies]
 rusqlite = { version = "0.32", features = ["bundled", "backup", "extra_check"] }
@@ -42,7 +44,13 @@ parquet = { version = "53", optional = true }
 arrow = { version = "53", optional = true }
 bytes = { version = "1", optional = true }
 tracing = { version = "0.1", optional = true }
+# --- nquery NEW ---
+tract-onnx = { version = "0.23", optional = true }
+tokenizers = { version = "0.20", optional = true }
 
+# Optional: only needed if you later switch to Burn native training
+# burn = { version = "0.16", optional = true }
+# burn-ndarray = { version = "0.16", optional = true }
 [dev-dependencies]
 tempfile = "3.10"
 criterion = { version = "0.5", features = ["html_reports"] }

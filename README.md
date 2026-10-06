@@ -9,7 +9,7 @@ A **jmesh** inspired wrapper for SQLite in Rust.
 
 Schema-less inserts, bulk operations, full-text search, upserts, and multi-format import/export — with memory safety and strong types.
 
-## Features
+## Core Features
 
 - ✅ **Schema-less inserts** — tables created automatically from your data
 - ✅ **Bulk operations** — batched inserts inside transactions
@@ -20,12 +20,39 @@ Schema-less inserts, bulk operations, full-text search, upserts, and multi-forma
 - ✅ **Type-safe queries** — strongly typed structs or dynamic `HashMap` rows
 - ✅ **Zero unsafe code** — memory safety guaranteed by the compiler
 
+### Optional Features (require enabling via Cargo features)
+- ✅ **Multi-format I/O** — CSV/TSV (default), Parquet (via `parquet` feature)
+- ✅ **Natural language queries** — generate SQL from English with ONNX model (via `nquery` feature)
+- ✅ **Schema-specific learning** — train neural adapters for improved NLP accuracy (via `nquery` feature)
+
 ## Install
 
 ```toml
 [dependencies]
-jmesh = "0.1"
+jmesh = "2.0"
 serde_json = "1.0"
+```
+
+### Optional Features
+
+jmesh offers optional features for extended functionality:
+
+- `nquery`: Natural language querying using ONNX models (requires ~200MB model download)
+- `learn`: Schema-specific model training (requires external Python script)
+- `parquet`: Parquet file format support
+- `csv`: CSV/TSV support (enabled by default)
+
+Example with optional features:
+```toml
+[dependencies]
+jmesh = { version = "2.0", features = ["nquery", "parquet"] }
+serde_json = "1.0"
+```
+
+## Install CLI
+
+```bash
+cargo install jmesh --features nquery,parquet
 ```
 
 ## CLI Usage
@@ -35,10 +62,16 @@ serde_json = "1.0"
 ### Install CLI
 
 ```bash
+# Basic installation (includes CSV/TSV support)
 cargo install jmesh
+
+# With optional features (nquery, parquet, etc.)
+cargo install jmesh --features nquery,parquet
 ```
 
 ### Commands
+
+All commands work with the basic installation. Some commands require optional features:
 
 ```bash
 # Insert JSON data
@@ -53,7 +86,7 @@ jmesh insert app.db users users.parquet
 # Export table to CSV
 jmesh export app.db users users.csv
 
-# Export to Parquet
+# Export to Parquet (requires --features parquet)
 jmesh export app.db users users.parquet --format parquet
 
 # Convert file formats
@@ -102,7 +135,42 @@ jmesh vacuum app.db
 
 # Analyze (show stats)
 jmesh analyze app.db
+
+# Natural language query (requires --features nquery)
+jmesh nquery --db app.db "Show me all users older than 25"
+
+# Train schema-specific model (requires --features nquery)
+jmesh learn --db app.db --epochs 100
+
+# Ingest log files into SQLite
+jmesh logs --db app.db --table app_logs /var/log/myapp/
 ```
+
+### Log ingestion
+
+`jmesh logs` turns plain-text logs into queryable rows — JSONL lines keep
+their own keys as columns, text lines get timestamps extracted, and every
+file's birth/mtime lands in `jmesh_files` so durations are SQL:
+
+```bash
+# Metadata only — fast over a big tree, no content read
+jmesh logs logs.db ~/.kimi-code/sessions --meta-only
+
+# Content, filtered: only lines matching the pattern are inserted
+jmesh logs logs.db ~/.kimi-code/sessions --grep "20_lmab_train" --table train_hits
+
+# File windows: how long did each task run?
+jmesh query logs.db "SELECT path, CAST(strftime('%s',mtime)-strftime('%s',birth) AS INTEGER) dur_s \
+                     FROM jmesh_files WHERE birth >= '2026-09-21' ORDER BY dur_s DESC"
+
+# Structured JSONL: relay requests keep ts/model/status/ttft_ms as columns
+jmesh logs logs.db ~/.kimi-code/nim-relay-requests.jsonl --table relay_req --replace
+jmesh query logs.db "SELECT model, COUNT(*) n, ROUND(AVG(ttft_ms)) avg_ttft FROM relay_req GROUP BY model"
+```
+
+Recognized timestamp prefixes: ISO (`2026-10-02T09:46:02`), pmset style
+(`2026-10-02 09:46:02 +0700`), time-of-day only (`09:46:02`), and zsh
+extended history (`: 1785381065:0;command` — epoch → ISO, duration → `dur`).
 
 ### Output Formats
 

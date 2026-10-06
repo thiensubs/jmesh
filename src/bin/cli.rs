@@ -4,7 +4,7 @@ use jmesh::io::Format;
 use jmesh::Database;
 use serde_json::Value;
 use std::fs;
-use std::io::{self, Read};
+use std::io::{self, BufRead, Read};
 use std::path::PathBuf;
 
 /// jmesh — JSON-native SQLite with multi-format import/export
@@ -137,6 +137,52 @@ enum Commands {
 
     /// Analyze database (show stats)
     Analyze { db: PathBuf },
+
+    /// Natural language query (generate SQL from English)
+    #[cfg(feature = "nquery")]
+    Nquery {
+        question: String,
+        db: PathBuf,
+        /// Show generated SQL without executing
+        #[arg(long)]
+        explain: bool,
+        /// Allow non-SELECT statements (dangerous)
+        #[arg(long)]
+        allow_write: bool,
+        /// Path to ONNX model directory
+        #[arg(long, default_value = "models/nquery")]
+        model_dir: PathBuf,
+    },
+
+    /// Train a schema-specific neural adapter for a database
+    #[cfg(feature = "nquery")]
+    Learn {
+        db: PathBuf,
+        #[arg(short, long, default_value = "200")]
+        epochs: usize,
+    },
+
+    /// Ingest log files into SQLite: JSONL and plain-text logs, with
+    /// timestamps extracted, plus a jmesh_files metadata table (birth/mtime)
+    /// so file windows become SQL.
+    Logs {
+        db: PathBuf,
+        /// Files or directories (directories are walked recursively)
+        #[arg(value_name = "PATH", num_args = 1..)]
+        paths: Vec<PathBuf>,
+        /// Only insert lines matching this literal pattern
+        #[arg(long)]
+        grep: Option<String>,
+        /// Table name for line rows
+        #[arg(long, default_value = "logs")]
+        table: String,
+        /// Record file metadata only — no line content, fast for big trees
+        #[arg(long)]
+        meta_only: bool,
+        /// Replace existing data (drop the tables first)
+        #[arg(long)]
+        replace: bool,
+    },
 }
 
 #[derive(Clone, ValueEnum)]
@@ -212,6 +258,43 @@ fn main() -> Result<()> {
         } => cmd_delete(db, table, where_clause),
         Commands::Vacuum { db } => cmd_vacuum(db),
         Commands::Analyze { db } => cmd_analyze(db),
+        // --- NEW handlers ---
+        #[cfg(feature = "nquery")]
+        Commands::Nquery {
+            question,
+            db,
+            explain,
+            allow_write,
+            model_dir,
+        } => {
+            let nq = jmesh::nquery::NQuery::new(&model_dir)?;
+            let sql = nq.ask(&question, &db, allow_write)?;
+
+            if explain {
+                println!("-- Generated SQL:\n{}", sql);
+                return Ok(());
+            }
+
+            let database = Database::open(&db)?;
+            let results = database.query(&sql)?;
+            println!("{}", serde_json::to_string_pretty(&results)?);
+            Ok(())
+        }
+
+        #[cfg(feature = "nquery")]
+        Commands::Learn { db, epochs } => {
+            jmesh::learn::learn(&db, epochs)?;
+            Ok(())
+        }
+
+        Commands::Logs {
+            db,
+            paths,
+            grep,
+            table,
+            meta_only,
+            replace,
+        } => cmd_logs(db, paths, grep, table, meta_only, replace),
     }
 }
 
@@ -675,5 +758,256 @@ fn format_value(v: &Value) -> String {
         Value::Number(n) => n.to_string(),
         Value::String(s) => s.clone(),
         Value::Array(_) | Value::Object(_) => v.to_string(),
+    }
+}
+
+// ============================================================================
+// LOGS
+// ============================================================================
+
+/// Files under `path`, directories walked recursively — no walkdir
+/// dependency; the tree is a few hundred entries at most here.
+fn collect_files(path: &std::path::Path, out: &mut Vec<PathBuf>) {
+    if path.is_dir() {
+        if let Ok(entries) = fs::read_dir(path) {
+            for entry in entries.flatten() {
+                let p = entry.path();
+                if p.is_dir() {
+                    collect_files(&p, out);
+                } else {
+                    out.push(p);
+                }
+            }
+        }
+    } else {
+        out.push(path.to_path_buf());
+    }
+}
+
+fn iso_from_epoch(epoch: i64) -> String {
+    // Howard Hinnant's days-to-civil — no chrono dependency.
+    let days = epoch.div_euclid(86400);
+    let rem = epoch.rem_euclid(86400);
+    let z = days + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let y = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = if m <= 2 { y + 1 } else { y };
+    format!(
+        "{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
+        y, m, d, rem / 3600, (rem % 3600) / 60, rem % 60
+    )
+}
+
+/// Timestamps this ingester recognizes, without a regex dependency:
+///   2026-10-02T09:46:02… / 2026-10-02 09:46:02 +0700 …  (ISO / pmset)
+///   09:46:02 …                                          (time of day only)
+///   : 1785381065:0;command                              (zsh extended history)
+fn extract_ts(line: &str) -> (Option<String>, Option<i64>, String) {
+    let bytes = line.as_bytes();
+    if bytes.len() > 12 && bytes[0] == b':' && bytes[1] == b' ' {
+        let rest = &line[2..];
+        if let Some(semi) = rest.find(';') {
+            let head = &rest[..semi];
+            let mut parts = head.split(':');
+            let epoch: Option<i64> = parts.next().and_then(|s| s.parse().ok());
+            let dur: Option<i64> = parts.next().and_then(|s| s.parse().ok());
+            if let Some(epoch) = epoch {
+                return (
+                    Some(iso_from_epoch(epoch)),
+                    dur,
+                    rest[semi + 1..].to_string(),
+                );
+            }
+        }
+    }
+    if bytes.len() >= 19
+        && bytes[0].is_ascii_digit()
+        && bytes[4] == b'-'
+        && bytes[7] == b'-'
+        && (bytes[10] == b'T' || bytes[10] == b' ')
+        && bytes[13] == b':'
+    {
+        return (
+            Some(line[..19].to_string()),
+            None,
+            line[19..].trim_start().to_string(),
+        );
+    }
+    if bytes.len() >= 8 && bytes[2] == b':' && bytes[5] == b':' {
+        return (Some(line[..8].to_string()), None, line[8..].trim_start().to_string());
+    }
+    (None, None, line.to_string())
+}
+
+fn cmd_logs(
+    db_path: PathBuf,
+    paths: Vec<PathBuf>,
+    grep: Option<String>,
+    table: String,
+    meta_only: bool,
+    replace: bool,
+) -> Result<()> {
+    let db = Database::open(&db_path)
+        .with_context(|| format!("Failed to open database: {}", db_path.display()))?;
+    if replace {
+        db.table(&table).drop().ok();
+    }
+
+    let mut files = Vec::new();
+    for p in &paths {
+        collect_files(p, &mut files);
+    }
+    files.sort();
+    files.dedup();
+
+    let mut files_rows: Vec<Value> = Vec::new();
+    let mut line_rows: Vec<Value> = Vec::new();
+    let mut total_lines = 0usize;
+
+    for path in &files {
+        let meta = match fs::metadata(path) {
+            Ok(m) => m,
+            Err(_) => continue, // vanished between walk and read
+        };
+        let epoch = |t: std::result::Result<std::time::SystemTime, std::io::Error>| {
+            t.ok()
+                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| iso_from_epoch(d.as_secs() as i64))
+        };
+        let mut file_row = serde_json::json!({
+            "path": path.display().to_string(),
+            "size": meta.len() as i64,
+            "birth": epoch(meta.created()),
+            "mtime": epoch(meta.modified()),
+        });
+
+        if meta_only {
+            files_rows.push(file_row);
+            continue;
+        }
+
+        // Streamed: a training log can be hundreds of MB, and read_to_string
+        // would hold it all; lines() bounds memory to one line.
+        let file = match fs::File::open(path) {
+            Ok(f) => f,
+            Err(_) => continue, // binary or unreadable: not a text log
+        };
+        let reader = io::BufReader::new(file);
+        let mut count = 0i64;
+        for (i, line) in reader.lines().enumerate() {
+            let line = match line {
+                Ok(l) => l,
+                Err(_) => break, // non-UTF8 in the middle: keep what we got
+            };
+            if let Some(pattern) = &grep {
+                if !line.contains(pattern.as_str()) {
+                    continue;
+                }
+            }
+            let mut row = serde_json::Map::new();
+            row.insert("path".into(), Value::String(path.display().to_string()));
+            row.insert("line".into(), Value::Number((i + 1).into()));
+            let parsed: Option<Value> =
+                if line.trim_start().starts_with('{') || line.trim_start().starts_with('[') {
+                    serde_json::from_str(&line).ok()
+                } else {
+                    None
+                };
+            match parsed {
+                Some(Value::Object(map)) => {
+                    for (k, v) in map {
+                        row.insert(k, v);
+                    }
+                }
+                _ => {
+                    let (ts, dur, body) = extract_ts(&line);
+                    if let Some(ts) = ts {
+                        row.insert("ts".into(), Value::String(ts));
+                    }
+                    if let Some(dur) = dur {
+                        row.insert("dur".into(), Value::Number(dur.into()));
+                    }
+                    row.insert("body".into(), Value::String(body));
+                }
+            }
+            line_rows.push(Value::Object(row));
+            count += 1;
+        }
+        file_row["lines"] = Value::Number(count.into());
+        files_rows.push(file_row);
+        total_lines += count as usize;
+    }
+
+    // File metadata upserts on path: re-running `logs` refreshes instead of
+    // duplicating; line rows are insert-only, --replace makes that idempotent.
+    for row in &files_rows {
+        db.table("jmesh_files").upsert(row, "path")?;
+    }
+    if !line_rows.is_empty() {
+        db.table(&table).insert_all(&line_rows)?;
+    }
+    println!(
+        "Ingested {} file(s), {} line(s) into '{}'",
+        files_rows.len(),
+        total_lines,
+        table
+    );
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extracts_iso_timestamp() {
+        let (ts, dur, body) = extract_ts("2026-10-02 09:46:02 +0700 message body");
+        assert_eq!(ts.as_deref(), Some("2026-10-02 09:46:02"));
+        assert_eq!(dur, None);
+        assert_eq!(body, "+0700 message body");
+    }
+
+    #[test]
+    fn extracts_iso_with_t_separator() {
+        // The T is kept verbatim: SQLite parses "YYYY-MM-DDTHH:MM:SS" fine.
+        let (ts, _, _) = extract_ts("2026-10-02T09:46:02 stuff");
+        assert_eq!(ts.as_deref(), Some("2026-10-02T09:46:02"));
+    }
+
+    #[test]
+    fn extracts_time_of_day_only() {
+        let (ts, _, body) = extract_ts("09:46:02 41.0 W (laptop 10.0 smc)");
+        assert_eq!(ts.as_deref(), Some("09:46:02"));
+        assert_eq!(body, "41.0 W (laptop 10.0 smc)");
+    }
+
+    #[test]
+    fn extracts_zsh_history_with_duration() {
+        let (ts, dur, body) = extract_ts(": 1785381065:3600;cargo build --release");
+        assert!(ts.is_some());          // epoch → ISO, in UTC
+        assert_eq!(dur, Some(3600));
+        assert_eq!(body, "cargo build --release");
+    }
+
+    #[test]
+    fn leaves_plain_lines_alone() {
+        let (ts, dur, body) = extract_ts("no timestamp here");
+        assert_eq!(ts, None);
+        assert_eq!(dur, None);
+        assert_eq!(body, "no timestamp here");
+    }
+
+    #[test]
+    fn civil_from_days_is_hinnant_exact() {
+        assert_eq!(iso_from_epoch(0), "1970-01-01 00:00:00");
+        assert_eq!(iso_from_epoch(86400), "1970-01-02 00:00:00");
+        // This machine's boot: local 2026-09-21 23:35:38 +0700 = 16:35:38 UTC
+        assert_eq!(iso_from_epoch(1_790_008_538), "2026-09-21 16:35:38");
     }
 }
