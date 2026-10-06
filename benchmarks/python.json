@@ -5,55 +5,55 @@
     "n1000": {
       "import": {
         "records": 1000,
-        "time_ms": 806.69,
-        "cpu_user_ms": 104.16,
-        "cpu_sys_ms": 206.79,
+        "time_ms": 896.18,
+        "cpu_user_ms": 104.12,
+        "cpu_sys_ms": 230.06,
         "memory_kb": 128,
-        "ops_per_sec": 1240.0
+        "ops_per_sec": 1116.0
       },
       "export": {
         "records": 1000,
-        "time_ms": 1.74,
-        "cpu_user_ms": 1.36,
-        "cpu_sys_ms": 0.39,
-        "memory_kb": 256,
-        "ops_per_sec": 573247.0
+        "time_ms": 2.05,
+        "cpu_user_ms": 2.06,
+        "cpu_sys_ms": 0.0,
+        "memory_kb": 384,
+        "ops_per_sec": 486646.0
       }
     },
     "n10000": {
       "import": {
         "records": 10000,
-        "time_ms": 8406.81,
-        "cpu_user_ms": 973.76,
-        "cpu_sys_ms": 2101.98,
+        "time_ms": 8397.85,
+        "cpu_user_ms": 936.34,
+        "cpu_sys_ms": 2268.58,
         "memory_kb": 384,
-        "ops_per_sec": 1190.0
+        "ops_per_sec": 1191.0
       },
       "export": {
         "records": 10000,
-        "time_ms": 16.18,
-        "cpu_user_ms": 14.31,
-        "cpu_sys_ms": 1.87,
+        "time_ms": 16.3,
+        "cpu_user_ms": 13.92,
+        "cpu_sys_ms": 2.39,
         "memory_kb": 3456,
-        "ops_per_sec": 617978.0
+        "ops_per_sec": 613377.0
       }
     },
     "n100000": {
       "import": {
         "records": 100000,
-        "time_ms": 76000.63,
-        "cpu_user_ms": 9900.91,
-        "cpu_sys_ms": 20756.27,
+        "time_ms": 75999.04,
+        "cpu_user_ms": 9952.85,
+        "cpu_sys_ms": 21890.59,
         "memory_kb": 0,
         "ops_per_sec": 1316.0
       },
       "export": {
         "records": 100000,
-        "time_ms": 161.83,
-        "cpu_user_ms": 150.46,
-        "cpu_sys_ms": 11.37,
-        "memory_kb": 36452,
-        "ops_per_sec": 617932.0
+        "time_ms": 164.82,
+        "cpu_user_ms": 154.91,
+        "cpu_sys_ms": 9.89,
+        "memory_kb": 36708,
+        "ops_per_sec": 606708.0
       }
     }
   }
