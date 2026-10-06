@@ -800,7 +800,12 @@ fn iso_from_epoch(epoch: i64) -> String {
     let y = if m <= 2 { y + 1 } else { y };
     format!(
         "{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
-        y, m, d, rem / 3600, (rem % 3600) / 60, rem % 60
+        y,
+        m,
+        d,
+        rem / 3600,
+        (rem % 3600) / 60,
+        rem % 60
     )
 }
 
@@ -840,7 +845,11 @@ fn extract_ts(line: &str) -> (Option<String>, Option<i64>, String) {
         );
     }
     if bytes.len() >= 8 && bytes[2] == b':' && bytes[5] == b':' {
-        return (Some(line[..8].to_string()), None, line[8..].trim_start().to_string());
+        return (
+            Some(line[..8].to_string()),
+            None,
+            line[8..].trim_start().to_string(),
+        );
     }
     (None, None, line.to_string())
 }
@@ -990,7 +999,7 @@ mod tests {
     #[test]
     fn extracts_zsh_history_with_duration() {
         let (ts, dur, body) = extract_ts(": 1785381065:3600;cargo build --release");
-        assert!(ts.is_some());          // epoch → ISO, in UTC
+        assert!(ts.is_some()); // epoch → ISO, in UTC
         assert_eq!(dur, Some(3600));
         assert_eq!(body, "cargo build --release");
     }
