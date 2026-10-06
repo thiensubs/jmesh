@@ -87,3 +87,9 @@ impl SchemaCache {
         self.cache.borrow_mut().clear();
     }
 }
+
+impl Default for SchemaCache {
+    fn default() -> Self {
+        Self::new()
+    }
+}

@@ -26,8 +26,11 @@ pub enum Error {
     #[error("not a JSON object")]
     NotAnObject,
 
-    #[error("parquet error: {0}")]
-    Parquet(String),
+    #[error("Parquet error: {0}")]
+    Parquet(#[from] parquet::errors::ParquetError),
+
+    #[error("Arrow error: {0}")]
+    Arrow(#[from] arrow::error::ArrowError),
 
     #[error("FTS not enabled for table: {0}")]
     FtsNotEnabled(String),

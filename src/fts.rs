@@ -112,7 +112,7 @@ pub(crate) fn search_fts(
     );
 
     let column_names = crate::schema::SchemaCache::column_names(
-        &mut crate::schema::SchemaCache::new(),
+        &crate::schema::SchemaCache::new(),
         conn,
         table,
     )?;
