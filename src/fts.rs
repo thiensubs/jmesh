@@ -111,11 +111,8 @@ pub(crate) fn search_fts(
         fts = fts_quoted
     );
 
-    let column_names = crate::schema::SchemaCache::column_names(
-        &crate::schema::SchemaCache::new(),
-        conn,
-        table,
-    )?;
+    let column_names =
+        crate::schema::SchemaCache::column_names(&crate::schema::SchemaCache::new(), conn, table)?;
 
     let mut stmt = conn.prepare(&sql)?;
     let rows = stmt
