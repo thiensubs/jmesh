@@ -1,6 +1,6 @@
 # Benchmark Report
 
-Generated: 2026-10-06 11:08:46 UTC
+Generated: 2026-10-07 01:49:08 UTC
 
 | Language | Library |
 |----------|---------|
@@ -14,34 +14,34 @@ Generated: 2026-10-06 11:08:46 UTC
 
 | Language | Import time | Import rows/s | Export time | Export rows/s | Peak mem Δ (import) |
 |----------|------------|---------------|-------------|---------------|---------------------|
-| C (libsqlite3) | 0.51 ms | 1,956,733 | 0.14 ms | 7,035,812 | 0 KB |
-| Rust (jmesh) | 1.08 ms | 926,313 | 0.79 ms | 1,266,417 | 0 KB |
-| Python (sqlite-utils) | 948.29 ms | 1,055 | 1.62 ms | 619,072 | 128 KB |
+| C (libsqlite3) | 0.73 ms | 1,370,036 | 0.19 ms | 5,319,715 | 0 KB |
+| Rust (jmesh) | 1.21 ms | 829,687 | 0.93 ms | 1,072,172 | 0 KB |
+| Python (sqlite-utils) | 769.99 ms | 1,299 | 2.00 ms | 501,237 | 128 KB |
 
 ### 10,000 records
 
 | Language | Import time | Import rows/s | Export time | Export rows/s | Peak mem Δ (import) |
 |----------|------------|---------------|-------------|---------------|---------------------|
-| C (libsqlite3) | 5.23 ms | 1,912,631 | 1.35 ms | 7,388,891 | 0 KB |
-| Rust (jmesh) | 5.59 ms | 1,788,775 | 7.71 ms | 1,297,398 | 0 KB |
-| Python (sqlite-utils) | 12.65 s | 790 | 12.85 ms | 778,387 | 256 KB |
+| C (libsqlite3) | 7.39 ms | 1,352,537 | 1.79 ms | 5,576,287 | 0 KB |
+| Rust (jmesh) | 6.91 ms | 1,447,943 | 8.92 ms | 1,121,348 | 0 KB |
+| Python (sqlite-utils) | 7.40 s | 1,352 | 16.33 ms | 612,388 | 256 KB |
 
 ### 100,000 records
 
 | Language | Import time | Import rows/s | Export time | Export rows/s | Peak mem Δ (import) |
 |----------|------------|---------------|-------------|---------------|---------------------|
-| C (libsqlite3) | 61.20 ms | 1,634,035 | 15.14 ms | 6,605,692 | 0 KB |
-| Rust (jmesh) | 114.27 ms | 875,100 | 74.39 ms | 1,344,283 | 2,176 KB |
-| Python (sqlite-utils) | 117.32 s | 852 | 128.50 ms | 778,188 | 396 KB |
+| C (libsqlite3) | 82.97 ms | 1,205,193 | 19.22 ms | 5,201,803 | 0 KB |
+| Rust (jmesh) | 80.15 ms | 1,247,602 | 88.87 ms | 1,125,237 | 2,176 KB |
+| Python (sqlite-utils) | 72.00 s | 1,389 | 163.02 ms | 613,412 | 608 KB |
 
 ## Summary
 
 Fastest at 100,000 records:
 
-- **Import**: C (libsqlite3) (61.20 ms, 1,634,035 rows/s)
-  - Rust (jmesh): 1.9× slower
-  - Python (sqlite-utils): 1917.0× slower
-- **Export**: C (libsqlite3) (15.14 ms, 6,605,692 rows/s)
-  - Rust (jmesh): 4.9× slower
+- **Import**: Rust (jmesh) (80.15 ms, 1,247,602 rows/s)
+  - C (libsqlite3): 1.0× slower
+  - Python (sqlite-utils): 898.2× slower
+- **Export**: C (libsqlite3) (19.22 ms, 5,201,803 rows/s)
+  - Rust (jmesh): 4.6× slower
   - Python (sqlite-utils): 8.5× slower
-- **Streaming export** (`write_jsonl`, jmesh only): 2,806,341 rows/s (2.1× faster than materialized export)
+- **Streaming export** (`write_jsonl`, jmesh only): 2,300,488 rows/s (2.0× faster than materialized export)
