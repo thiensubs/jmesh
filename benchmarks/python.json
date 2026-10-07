@@ -5,55 +5,55 @@
     "n1000": {
       "import": {
         "records": 1000,
-        "time_ms": 769.99,
-        "cpu_user_ms": 107.45,
-        "cpu_sys_ms": 219.78,
+        "time_ms": 2105.03,
+        "cpu_user_ms": 92.09,
+        "cpu_sys_ms": 160.84,
         "memory_kb": 128,
-        "ops_per_sec": 1299.0
+        "ops_per_sec": 475.0
       },
       "export": {
         "records": 1000,
-        "time_ms": 2.0,
-        "cpu_user_ms": 1.01,
-        "cpu_sys_ms": 0.99,
-        "memory_kb": 384,
-        "ops_per_sec": 501237.0
+        "time_ms": 1.6,
+        "cpu_user_ms": 0.82,
+        "cpu_sys_ms": 0.79,
+        "memory_kb": 256,
+        "ops_per_sec": 624182.0
       }
     },
     "n10000": {
       "import": {
         "records": 10000,
-        "time_ms": 7395.74,
-        "cpu_user_ms": 957.72,
-        "cpu_sys_ms": 2160.53,
-        "memory_kb": 256,
-        "ops_per_sec": 1352.0
+        "time_ms": 9470.19,
+        "cpu_user_ms": 775.66,
+        "cpu_sys_ms": 1560.8,
+        "memory_kb": 512,
+        "ops_per_sec": 1056.0
       },
       "export": {
         "records": 10000,
-        "time_ms": 16.33,
-        "cpu_user_ms": 15.7,
-        "cpu_sys_ms": 0.64,
+        "time_ms": 12.44,
+        "cpu_user_ms": 7.23,
+        "cpu_sys_ms": 5.22,
         "memory_kb": 3456,
-        "ops_per_sec": 612388.0
+        "ops_per_sec": 803605.0
       }
     },
     "n100000": {
       "import": {
         "records": 100000,
-        "time_ms": 71997.38,
-        "cpu_user_ms": 10184.77,
-        "cpu_sys_ms": 21314.99,
-        "memory_kb": 608,
-        "ops_per_sec": 1389.0
+        "time_ms": 107508.64,
+        "cpu_user_ms": 8056.76,
+        "cpu_sys_ms": 15436.99,
+        "memory_kb": 0,
+        "ops_per_sec": 930.0
       },
       "export": {
         "records": 100000,
-        "time_ms": 163.02,
-        "cpu_user_ms": 155.93,
-        "cpu_sys_ms": 7.1,
-        "memory_kb": 36224,
-        "ops_per_sec": 613412.0
+        "time_ms": 126.81,
+        "cpu_user_ms": 119.22,
+        "cpu_sys_ms": 7.6,
+        "memory_kb": 36592,
+        "ops_per_sec": 788555.0
       }
     }
   }
