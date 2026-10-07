@@ -103,7 +103,7 @@ jobs:
           "$hash  jmesh-$tag-$target.zip" | Out-File -Encoding ascii "jmesh-$tag-$target.zip.sha256"
 
       - name: Upload release assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v4
         with:
           files: |
             jmesh-*.tar.gz
