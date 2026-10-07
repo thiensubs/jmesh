@@ -63,6 +63,28 @@ impl SchemaCache {
         Ok(schema)
     }
 
+    /// Get existing schema or initialize it by calling `init` (which must
+    /// create the table in the database). Used by `ensure_table` to
+    /// atomically get-or-create the schema.
+    pub fn get_or_init<F>(&self, conn: &Connection, table: &str, init: F) -> Result<Schema>
+    where
+        F: FnOnce() -> Result<Schema>,
+    {
+        if let Some(schema) = self.cache.borrow().get(table) {
+            return Ok(schema.clone());
+        }
+        // Not in cache — try to load from DB
+        if let Ok(schema) = self.get(conn, table) {
+            return Ok(schema);
+        }
+        // Table doesn't exist in DB — call init to create it
+        let schema = init()?;
+        self.cache
+            .borrow_mut()
+            .insert(table.to_string(), schema.clone());
+        Ok(schema)
+    }
+
     pub fn invalidate(&self, table: &str) {
         self.cache.borrow_mut().remove(table);
     }

@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::schema::SchemaCache;
+use crate::schema::{ColumnInfo, Schema, SchemaCache};
 use crate::table::Table;
 use crate::types::{infer_sql_type, quote_id, JsonValue};
 use rusqlite::{Connection, OpenFlags};
@@ -146,11 +146,23 @@ impl Database {
         Ok(())
     }
 
-    /// The underlying rusqlite connection, for the callers that need raw
-    /// prepared statements — bulk loads and raw reads that must not
-    /// materialize rows as JSON.
-    pub fn connection(&self) -> &Connection {
-        &self.conn
+    /// Execute a closure with access to the underlying rusqlite `Connection`.
+    ///
+    /// This is an escape hatch for advanced use cases that require raw SQL
+    /// or prepared statements not covered by jmesh's API. The connection
+    /// remains managed by jmesh (WAL, PRAGMAs, schema cache) — the closure
+    /// should not change PRAGMA settings or interfere with the schema cache.
+    ///
+    /// # Safety
+    /// The caller must ensure the closure does not:
+    /// - Change `journal_mode`, `synchronous`, `foreign_keys`, or `mmap_size`
+    /// - Modify tables tracked by the schema cache without calling `invalidate`
+    /// - Hold the connection across `.await` points (if async is added later)
+    pub fn with_connection<F, R>(&self, f: F) -> Result<R>
+    where
+        F: FnOnce(&Connection) -> Result<R>,
+    {
+        f(&self.conn)
     }
 
     /// Close the database connection.
@@ -168,54 +180,42 @@ impl Database {
         table: &str,
         obj: &serde_json::Map<String, JsonValue>,
     ) -> Result<()> {
-        let cache = self.schema_cache.borrow_mut();
-
-        // Fast path: schema in cache and all columns exist
-        if let Ok(schema) = cache.get(&self.conn, table) {
-            let existing: std::collections::HashSet<_> =
-                schema.columns.iter().map(|c| &c.name).collect();
-            let missing: Vec<&String> = obj.keys().filter(|k| !existing.contains(k)).collect();
-
-            if missing.is_empty() {
-                return Ok(());
-            }
-
-            // Need to add columns — drop borrow before executing DDL
-            drop(cache);
-            for col in missing {
-                let sql = format!(
-                    "ALTER TABLE {} ADD COLUMN {} {}",
-                    quote_id(table),
-                    quote_id(col),
-                    infer_sql_type(obj.get(col).unwrap_or(&JsonValue::Null))
-                );
+        // Single unified path: get or create schema, then add missing columns.
+        let schema = {
+            let cache = self.schema_cache.borrow_mut();
+            cache.get_or_init(&self.conn, table, || {
+                // Table doesn't exist in DB — create it
+                let col_defs: Vec<String> = obj
+                    .iter()
+                    .map(|(k, v)| format!("{} {}", quote_id(k), infer_sql_type(v)))
+                    .collect();
+                let sql = format!("CREATE TABLE {} ({})", quote_id(table), col_defs.join(", "));
                 self.conn.execute(&sql, [])?;
-            }
-            self.schema_cache.borrow_mut().invalidate(table);
-            return Ok(());
-        }
+                // Build schema from the object we just used
+                let columns = obj
+                    .iter()
+                    .map(|(k, v)| ColumnInfo {
+                        name: k.clone(),
+                        type_name: infer_sql_type(v).to_string(),
+                        not_null: false,
+                        default_value: None,
+                        primary_key: false,
+                    })
+                    .collect();
+                Ok(Schema {
+                    table_name: table.to_string(),
+                    columns,
+                })
+            })?
+        };
 
-        // Table not in cache — check existence
-        let exists = SchemaCache::table_exists(&self.conn, table)?;
-
-        if !exists {
-            // CREATE TABLE
-            let col_defs: Vec<String> = obj
-                .iter()
-                .map(|(k, v)| format!("{} {}", quote_id(k), infer_sql_type(v)))
-                .collect();
-            let sql = format!("CREATE TABLE {} ({})", quote_id(table), col_defs.join(", "));
-            self.conn.execute(&sql, [])?;
-        }
-
-        // Load schema into cache
-        let schema = cache.get(&self.conn, table)?;
+        // Add any missing columns (schema now guaranteed to exist)
         let existing: std::collections::HashSet<_> =
             schema.columns.iter().map(|c| &c.name).collect();
-        let missing: Vec<&String> = obj.keys().filter(|k| !existing.contains(k)).collect();
+        let missing: Vec<_> = obj.keys().filter(|k| !existing.contains(k)).collect();
 
         if !missing.is_empty() {
-            drop(cache);
+            // Drop cache borrow before DDL
             for col in missing {
                 let sql = format!(
                     "ALTER TABLE {} ADD COLUMN {} {}",
